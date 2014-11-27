@@ -81,14 +81,13 @@ public class WordCountTopology {
 
     TopologyBuilder builder = new TopologyBuilder();
 
-    builder.setSpout("spout", new RandomSentenceSpout(), 5);
+    builder.setSpout("spout", new TextFileSpout("/Users/vida/Code/reference-apps/logs_analyzer/data/apache.accesslog"), 5);
 
     builder.setBolt("split", new SplitSentence(), 8).shuffleGrouping("spout");
     builder.setBolt("count", new WordCount(), 12).fieldsGrouping("split", new Fields("word"));
 
     Config conf = new Config();
     conf.setDebug(true);
-
 
     if (args != null && args.length > 0) {
       conf.setNumWorkers(3);
