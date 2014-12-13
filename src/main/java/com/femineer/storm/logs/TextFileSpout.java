@@ -14,6 +14,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 
+/**
+ * Opens a file and then reads it out line by line.
+ */
 public class TextFileSpout extends BaseRichSpout {
   private SpoutOutputCollector _collector;
   private String filename;
