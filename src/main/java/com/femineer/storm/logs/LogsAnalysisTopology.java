@@ -22,9 +22,10 @@ import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.tuple.Fields;
 
 /**
- * This is an exploration of storm to calculate the same log statistics as the Databricks Reference App - Logs Analysis.
+ * To run do:
  *
  * % storm jar target/uber-storm-logs-analysis-0.0.1-SNAPSHOT.jar com.femineer.storm.logs.LogsAnalysisTopology
  */
@@ -38,12 +39,21 @@ public class LogsAnalysisTopology {
 
     builder.setBolt("parse_log_line", new ApacheLogLineParserBolt(), 8).shuffleGrouping("spout");
 
+    // Calculate the content size stats.
+    // TODO(vida): This doesn't combine.
     builder.setBolt("output_content_size",
-        new OutputFieldOfApacheAccessLogBolt(ApacheLogLineParserBolt.FIELD_CONTENT_SIZE), 8)
+        new OutputFieldOfTuple(ApacheLogLineParserBolt.FIELD_CONTENT_SIZE, Long.class), 8)
         .localOrShuffleGrouping("parse_log_line");
-
-    // This will eventually need to merge all to one bolt to output the final stats.
     builder.setBolt("merge_content_size_stats", new ContentSizeStatsBolt(), 8).globalGrouping("output_content_size");
+
+    // Sum all the response codes.
+    builder.setBolt("output_response_code",
+        new OutputFieldOfTuple(ApacheLogLineParserBolt.FIELD_RESPONSE_CODE, Integer.class), 8)
+        .localOrShuffleGrouping("parse_log_line");
+    builder.setBolt("sum_response_code", new ResponseCodeBolt(), 8)
+        .fieldsGrouping("output_response_code", new Fields(ApacheLogLineParserBolt.FIELD_RESPONSE_CODE));
+
+    
 
     Config conf = new Config();
     conf.setDebug(true);

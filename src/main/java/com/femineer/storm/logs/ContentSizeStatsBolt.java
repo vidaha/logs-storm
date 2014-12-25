@@ -7,17 +7,17 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-// Not sure how this saves state from a previous value or how to break this out into windows.
+// NOTE: This current setup doesn't combine.
 public class ContentSizeStatsBolt extends BaseBasicBolt {
   public static final String FIELD_COUNT = "content_size_count";
   public static final String FIELD_SUM = "content_size_sum";
   public static final String FIELD_MINIMUM = "content_size_minimum";
   public static final String FIELD_MAXIMUM = "content_size_maximum";
 
-  public static Long runningCount = 0L;
-  public static Long runningSum = 0L;
-  public static Long runningMin = null;
-  public static Long runningMax = null;
+  public Long runningCount = 0L;
+  public Long runningSum = 0L;
+  public Long runningMin = null;
+  public Long runningMax = null;
 
 
   @Override
