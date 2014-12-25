@@ -50,10 +50,24 @@ public class LogsAnalysisTopology {
     builder.setBolt("output_response_code",
         new OutputFieldOfTuple(ApacheLogLineParserBolt.FIELD_RESPONSE_CODE, Integer.class), 8)
         .localOrShuffleGrouping("parse_log_line");
-    builder.setBolt("sum_response_code", new ResponseCodeBolt(), 8)
+    builder.setBolt("sum_response_code", new SumKeyBolt(), 8)
         .fieldsGrouping("output_response_code", new Fields(ApacheLogLineParserBolt.FIELD_RESPONSE_CODE));
 
-    
+    // Sum all the ipAddresses, and then output any that are over a threshold.
+    builder.setBolt("output_ipaddress",
+        new OutputFieldOfTuple(ApacheLogLineParserBolt.FIELD_IP_ADDRESS, String.class), 8)
+        .localOrShuffleGrouping("parse_log_line");
+    builder.setBolt("sum_ipaddress", new SumKeyBolt(), 8)
+        .fieldsGrouping("output_ipaddress", new Fields(ApacheLogLineParserBolt.FIELD_IP_ADDRESS));
+    // Pass through a localOrShuffleGrouping that emits any over N.
+
+    // Sum all the counts of the endpoints, and then output the top N.
+    builder.setBolt("output_endpoint",
+        new OutputFieldOfTuple(ApacheLogLineParserBolt.FIELD_ENDPOINT, String.class), 8)
+        .localOrShuffleGrouping("parse_log_line");
+    builder.setBolt("sum_endpoint", new SumKeyBolt(), 8)
+        .fieldsGrouping("output_endpoint", new Fields(ApacheLogLineParserBolt.FIELD_ENDPOINT));
+    // Pass through a global that emits the top N.
 
     Config conf = new Config();
     conf.setDebug(true);

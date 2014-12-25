@@ -19,7 +19,6 @@ public class ContentSizeStatsBolt extends BaseBasicBolt {
   public Long runningMin = null;
   public Long runningMax = null;
 
-
   @Override
   public void execute(Tuple tuple, BasicOutputCollector collector) {
     Long contextSize = tuple.getLong(0);
